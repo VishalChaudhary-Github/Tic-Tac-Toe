@@ -35,6 +35,7 @@ pygame.mixer.music.play(-1)
 
 def winner():
     set1 = set()
+    set1.clear()
     if 'area1' in winning_values_dict and 'area2' in winning_values_dict and 'area3' in winning_values_dict:
         set1.add(winning_values_dict['area1'])
         set1.add(winning_values_dict['area2'])
@@ -240,71 +241,56 @@ def calculate(pos, button):
             return 'area9', 'circle'
 
 
-def main():
-    game_window.fill((139, 223, 209))
+game_window.fill((139, 223, 209))
+winning_screen = False
+font = pygame.font.SysFont('arial', 22)
 
-    # Game Loop 1
 
-    running = True
-    while running:
-        clock.tick(60)
+# Game Loop
+running = True
+while running:
+    clock.tick(60)
 
-        # Event Handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                values_list.append((event.pos, event.button))
+    # Event Handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if not winning_screen:
+                if event.button == 1 or event.button == 2 or event.button == 3:
+                    values_list.append((event.pos, event.button))
 
-        # Creating a Background lines
+    # Creating a Background lines
+    if not winning_screen:
         pygame.draw.line(game_window, (255, 255, 255), (166, 0), (166, 500), 1)
         pygame.draw.line(game_window, (255, 255, 255), (332, 0), (332, 500), 1)
         pygame.draw.line(game_window, (255, 255, 255), (0, 166), (500, 166), 1)
         pygame.draw.line(game_window, (255, 255, 255), (0, 332), (500, 332), 1)
 
-        # Drawing Cris-Cross
-        for pos_, button_ in values_list:
-            av = calculate(pos_, button_)
-            area, value = av
-            if value is None:
-                winning_values_dict.pop(area, 'Not in the dict')
-            else:
-                winning_values_dict[area] = value
-        values_list.clear()
-        player = winner()
-        if player is not None:
-            return player
+    # Drawing Cris-Cross
+    for pos_, button_ in values_list:
+        av = calculate(pos_, button_)
+        area, value = av
+        if value is None:
+            winning_values_dict.pop(area, 'Not in the dict')
+        else:
+            winning_values_dict[area] = value
+    values_list.clear()
 
-        # Updating the display
-        pygame.display.flip()
+    player = winner()
 
+    if player is not None:
+        winning_values_dict.clear()
+        winning_screen = True
+        game_window.fill((139, 223, 209))
+        if player == 'DRAW':
+            text = font.render(f' MATCH - {player}', True, (255, 255, 255))
+        else:
+            text = font.render(f'WINNER - {player}', True, (255, 255, 255))
+        game_window.blit(text, (170, 225))
 
-winning_player = main()
-game_window.fill((139, 223, 209))
-
-font = pygame.font.SysFont('calibri', 22, bold=True, italic=True)
-if winning_player == 'DRAW':
-    text = font.render(f'MATCH {winning_player}', True, (255, 255, 255))
-else:
-    text = font.render(f'WINNER - {winning_player}', True, (255, 255, 255))
-
-pygame.mixer.music.stop()
-
-# Game Loop 2
-
-running2 = True
-while running2:
-    clock.tick(30)
-
-    # Event Handling
-    for event2 in pygame.event.get():
-        if event2.type == pygame.QUIT:
-            running2 = False
-
-    # Rendering the graphics
-    game_window.blit(text, (180, 225))
-
-    # updating the display
+    # Updating the display
     pygame.display.flip()
+
 
 pygame.quit()
